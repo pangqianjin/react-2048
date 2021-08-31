@@ -7,6 +7,11 @@ import './index.css'
 class Gameboard extends Component {
     componentDidMount() {
         document.addEventListener('keydown', this.handleOnKeydown)
+        // 从localStorage中读取最高分
+        const bestScore = parseInt(localStorage.getItem('bestScore') || '0')
+        // 更新最高分
+        this.props.updateBestScore(bestScore)
+
         // 随机产生一个位置的2或4
         const newRows = this.randomNumber(this.props.rows)
         // 然后更新rows
@@ -87,16 +92,24 @@ class Gameboard extends Component {
 
         if(win){
             setTimeout(()=>{
-                alert('you win! please replay or quit')
+                alert(`You win! Your score is ${this.props.score}. Please replay or quit`)
             }, 0)
+            if(this.props.score>this.props.bestScore){
+                this.props.updateBestScore(this.props.score)
+                localStorage.setItem('bestScore', `${this.props.bestScore}`)
+            }
 
             this.props.resetScore()
             const newRows = this.randomNumber([...this.props.rows])
             this.props.updateRows(newRows)
         }else if(over){
             setTimeout(()=>{
-                alert('you lost! please replay or quit')
+                alert(`You lost! Your score is ${this.props.score}. Please replay or quit`)   
             }, 0)
+            if(this.props.score>this.props.bestScore){
+                this.props.updateBestScore(this.props.score)
+                localStorage.setItem('bestScore', `${this.props.bestScore}`)
+            }
         }
     }
 
@@ -210,6 +223,8 @@ export default connect(
     // mapStateToProps
     state => ({
         rows: state.rows,// key的名字需要和reducers中的一致才行，否则为undefined
+        score: state.score,
+        bestScore: state.bestScore
     }),
     // mapDispatchToProps
     {
